@@ -392,20 +392,19 @@ function SimulatorTab() {
 
   const doOrderRoll = () => {
     if (rolling || !hasColors) return;
-    // Reshuffle until no slot index stays in the same position (positional derangement)
-    let arr;
-    let attempts = 0;
+    // Derange by shuffling indices, rejecting only if any index maps to itself
+    let perm;
     do {
-      arr = [...slots];
-      for (let i = arr.length - 1; i > 0; i--) {
+      perm = [0, 1, 2, 3];
+      for (let i = perm.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+        [perm[i], perm[j]] = [perm[j], perm[i]];
       }
-      attempts++;
-      // Safety: if duplicate colors make a true derangement impossible, allow after 100 tries
-      if (attempts > 100) break;
-    } while (arr.some((c, i) => c === slots[i]));
-    animateRoll(arr, "order");
+    } while (perm.some((p, i) => p === i));
+    animateRoll(
+      perm.map((p) => slots[p]),
+      "order",
+    );
   };
 
   const reset = () => {
