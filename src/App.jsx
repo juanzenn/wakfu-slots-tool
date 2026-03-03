@@ -36,6 +36,7 @@ function computeStats(slots) {
   const p99Order = Math.ceil(Math.log(0.01) / Math.log(1 - 1 / X));
   return {
     X,
+    slots: [...slots],
     counts,
     slotProb,
     anyOrderProb,
@@ -391,18 +392,19 @@ function SimulatorTab() {
 
   const doOrderRoll = () => {
     if (rolling || !hasColors) return;
-    // Keep shuffling until no slot lands in its original position (derangement)
+    // Reshuffle until no slot index stays in the same position (positional derangement)
     let arr;
+    let attempts = 0;
     do {
       arr = [...slots];
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
       }
-    } while (
-      arr.every((c, i) => c === slots[i]) ||
-      arr.some((c, i) => c === slots[i])
-    );
+      attempts++;
+      // Safety: if duplicate colors make a true derangement impossible, allow after 100 tries
+      if (attempts > 100) break;
+    } while (arr.some((c, i) => c === slots[i]));
     animateRoll(arr, "order");
   };
 
